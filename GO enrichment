@@ -1,1 +1,99 @@
 
+setwd("/Users/hongbingshe/Desktop")
+library(clusterProfiler)
+
+# Author: Hongbing She
+############## Term2Gene #########################
+# GO temm vs 对应基因 以所属途径                 #
+# GO  Gene  level                                #  
+# GO:0005634	YY_sex_022830.1	cellular_component #
+# GO:0006260	YY_sex_022830.1	biological_process #
+# GO:0006261	YY_sex_022830.1	biological_process #
+# GO:0003677	YY_sex_017100.1	molecular_function #
+##################################################
+
+################## go.tb #########################
+# GO temm 和所应对的描述信息                     #
+# 参考https://www.jianshu.com/p/b0a37f67bd44     #
+# Description  GO  level                         #  
+# mannosyltransferase	GO:0000030	molecular_function #
+# reproduction	GO:0000003	biological_process   #
+##################################################
+
+############## Genes_lsit ########################
+# 所要进行GO富集的基因名字                       #
+# Genes                                          #
+# YY_sex_011650.1                                #  
+# YY_sex_011660.1                                #
+# YY_sex_011670.1                                #
+# YY_sex_011680.1                                #
+##################################################
+
+rm(list=ls())
+
+## 导入数据
+Goannotation <- read.delim('ND_XX_v1_Term2Gene',stringsAsFactors = F)
+Goinfo <- read.delim('go.tb',stringsAsFactors = F)
+gene_list <- read.table('xx',header = T)
+
+gene_list <- as.vector(gene_list$Genes)
+
+
+## 拆分
+Goannotation = split(Goannotation, with(Goannotation, level))
+
+
+## 进行GO富集
+
+# MF
+MF_enrich <- enricher(gene = gene_list,
+                      pvalueCutoff = 1,
+                      pAdjustMethod = "BH",
+                      qvalueCutoff = 1,
+                      TERM2GENE = Goannotation[['molecular_function']][c(1,2)],
+                      TERM2NAME = Goinfo[c(2,1)])
+write.csv(as.data.frame(MF_enrich),'MF_enrich.csv',row.names = F)
+
+
+# BP
+BP_enrich <- enricher(gene = gene_list,
+                      pvalueCutoff = 1,
+                      pAdjustMethod = "BH",
+                      qvalueCutoff = 1,
+                      TERM2GENE = Goannotation[['biological_process']][c(1,2)],
+                      TERM2NAME = Goinfo[c(2,1)])
+write.csv(as.data.frame(BP_enrich),'BP_enrich.csv',row.names = F)
+# CC
+CC_enrich <- enricher(gene = gene_list,
+                      pvalueCutoff = 1,
+                      pAdjustMethod = "BH",
+                      qvalueCutoff = 1,
+                      TERM2GENE = Goannotation[['cellular_component']][c(1,2)],
+                      TERM2NAME = Goinfo[c(2,1)])
+write.csv(as.data.frame(CC_enrich),'CC_enrich.csv',row.names = F)
+
+
+## 图示 
+# 箱子图
+
+
+barplot(MF_enrich, showCategory = 6)
+barplot(BP_enrich, showCategory = 6)
+barplot(CC_enrich, showCategory = 6)
+
+
+# 点图
+dotplot(MF_enrich)
+dotplot(BP_enrich)
+dotplot(CC_enrich)
+
+# 连接图
+cnetplot(MF_enrich)
+cnetplot(BP_enrich)
+cnetplot(CC_enrich)
+
+emapplot(MF_enrich)
+emapplot(BP_enrich)
+emapplot(CC_enrich)
+
+
